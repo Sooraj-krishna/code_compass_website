@@ -19,13 +19,18 @@ import { useQuery } from "@tanstack/react-query";
 import { Project } from "@/types/project";
 
 export default function Home() {
-  // Fetch featured projects from JSON file
+  // Fetch featured projects from database API
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
-  const { data: allProjects = [] } = useQuery({
+  const { data: allProjects = [], isLoading, error } = useQuery({
     queryKey: ["projects"],
     queryFn: async (): Promise<Project[]> => {
-      const response = await fetch(`${basePath}/data/projects.json`);
-      if (!response.ok) throw new Error("Failed to fetch projects");
+      const response = await fetch(`${basePath}/api/projects`);
+      if (!response.ok) {
+        // Fallback to JSON file if API fails
+        const  fallbackResponse = await fetch(`${basePath}/data/projects.json`);
+        if (!fallbackResponse.ok) throw new Error("Failed to fetch projects");
+        return fallbackResponse.json();
+      }
       return response.json();
     },
   });

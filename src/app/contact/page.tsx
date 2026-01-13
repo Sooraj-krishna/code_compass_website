@@ -25,8 +25,19 @@ export default function Contact() {
     setIsSubmitting(true);
 
     try {
-      // Simulate form submission
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send message');
+      }
       
       toast({
         title: "Message sent successfully!",
@@ -42,9 +53,10 @@ export default function Contact() {
         message: '',
       });
     } catch (error) {
+      console.error('Contact form error:', error);
       toast({
         title: "Failed to send message",
-        description: "Please try again later or contact us directly.",
+        description: error instanceof Error ? error.message : "Please try again later or contact us directly.",
         variant: "destructive",
       });
     } finally {
